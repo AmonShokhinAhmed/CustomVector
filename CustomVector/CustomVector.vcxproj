@@ -139,7 +139,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="CustomIterator.h" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
