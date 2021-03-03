@@ -40,7 +40,7 @@ int main() {
 	/*
 	vector<int> intVector;
 	std::cout << intVector.capacity() << std::endl;
-	for (unsigned i = 0; i < 10; ++i) {
+	for (uint32_t i = 0; i < 10; ++i) {
 		intVector.push_back(i);
 		std::cout << intVector.capacity() << std::endl;
 	}

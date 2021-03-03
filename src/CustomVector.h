@@ -4,9 +4,9 @@ class CustomVector {
 private:
 	T* _data; 
 	//TODO: maybe don't hard code this and instead actually find out the correct value
-	const unsigned int _maxSize = 10e8;
-	unsigned int _size;
-	unsigned int _capacity;
+	const uint32_t _maxSize = 10e8;
+	uint32_t _size;
+	uint32_t _capacity;
 public:
 	struct Iterator {
 		using iterator_category = std::forward_iterator_tag;
@@ -35,25 +35,25 @@ public:
 	CustomVector(): _data(nullptr), _capacity(0), _size(0) {
 	}
 	~CustomVector() {
-		for (unsigned int i = 0; i < _size; i++) {
+		for (uint32_t i = 0; i < _size; i++) {
 			_data[i].~T();
 		}
 		delete[] reinterpret_cast<char*>(_data);
 	}
 
-	T& at(const unsigned int index) {
+	T& at(const uint32_t index) {
 		assert(index >= 0 && index < _size);
 		return _data[index];
 	}
-	T& operator[](const unsigned index) {
+	T& operator[](const uint32_t index) {
 		return _data[index];
 	}
 	
 	void push_back(const T& val) {
-		unsigned int newSize = _size + 1;
+		uint32_t newSize = _size + 1;
 		assert(newSize<=_maxSize);
 		if (newSize > _capacity) {
-			unsigned int newCapacity = _size + (_size / 2);
+			uint32_t newCapacity = _size + (_size / 2);
 			newCapacity = newCapacity >= newSize ? newCapacity : newSize;
 			reserve(newCapacity);
 		}
@@ -61,26 +61,26 @@ public:
 		_size = newSize;
 	}
 
-	const unsigned int size(void) {
+	const uint32_t size(void) {
 		return _size;
 	}
-	const unsigned int max_size(void) {
+	const uint32_t max_size(void) {
 		return _maxSize;
 	}
-	const unsigned int capacity(void) {
+	const uint32_t capacity(void) {
 		return _capacity;
 	}
 	
-	void resize(const unsigned int n) {
+	void resize(const uint32_t n) {
 		resize(n, T());
 	}
-	void resize(const unsigned int n, const T& val) {
+	void resize(const uint32_t n, const T& val) {
 		if (n > _maxSize) {
 			//TODO: throw error maybe
 			return;
 		}
 
-		unsigned int newCapacity = _capacity;
+		uint32_t newCapacity = _capacity;
 		while (newCapacity < n) {
 			newCapacity += (newCapacity / 2);
 		}
@@ -107,12 +107,12 @@ public:
 		_data = newData;
 		delete[] reinterpret_cast<char*>(oldData);
 	}
-	void reserve(const unsigned int n) {
+	void reserve(const uint32_t n) {
 		if (n <= _capacity) {
 			return;
 		}
 		T* newData = reinterpret_cast<T*>(new char[sizeof(T) * n]);
-		for (unsigned int i = 0; i < _size; i++) {
+		for (uint32_t i = 0; i < _size; i++) {
 			newData[i] = _data[i];
 			_data[i].~T();
 		}
@@ -125,7 +125,7 @@ public:
 	const T* as_array(void) {
 		return _data;
 	}
-	void erase_by_swap(const unsigned int n) {
+	void erase_by_swap(const uint32_t n) {
 		assert(n < _size);
 		_size--;
 		if (n != _size) {
@@ -156,7 +156,7 @@ public:
 			++curPosition;
 			++nextPosition;
 		}
-		unsigned int delAmount = 0;
+		uint32_t delAmount = 0;
 		while (curPosition != end()) {
 			(*curPosition).~T();
 			++curPosition;
