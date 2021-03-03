@@ -12,7 +12,6 @@ public:
 	}
 
 	~CustomVector() {
-		std::cout << "Vector Detor" << std::endl;
 		for (unsigned int i = 0; i < _size; i++) {
 			_data[i].~T();
 		}
@@ -20,7 +19,7 @@ public:
 
 	T& at(const unsigned int index) {
 		if (index >= _size) {
-			//TODO: throw error
+			//TODO: throw error maybe
 		}
 		return _data[index];
 	}
@@ -43,6 +42,7 @@ public:
 		_data[_size] = T(val);
 		_size = newSize;
 	}
+
 	const unsigned int size(void) {
 		return _size;
 	}
@@ -54,11 +54,41 @@ public:
 	}
 	
 	void resize(const unsigned int n) {
-	 
+		resize(n, T());
 	}
 
 	void resize(const unsigned int n, const T& val) {
+		if (n > _maxSize) {
+			//TODO: throw error maybe
+			return;
+		}
 
+		unsigned int newCapacity = _capacity;
+		while (newCapacity < n) {
+			newCapacity += (newCapacity / 2);
+		}
+		T* newData = reinterpret_cast<T*>(new char[sizeof(T) * newCapacity]);
+		if (n <= _size) {
+			for (int i = 0; i < n; i++) {
+				newData[i] = _data[i];
+				_data[i].~T();
+			}
+		}
+		else {
+			for (int i = 0; i < _size; i++) {
+				newData[i] = _data[i];
+				_data[i].~T();
+			}
+			for (int i = _size; i < n; i++) {
+				//This will throw an error if no default constructor is provided, but std::vector does as well
+				newData[i] = T(val);
+			}
+		}
+		_capacity = newCapacity;
+		_size = n;
+		T* oldData = _data;
+		_data = newData;
+		delete[] reinterpret_cast<char*>(oldData);
 	}
 
 	void reserve(unsigned int n) {
@@ -68,6 +98,7 @@ public:
 		T* newData = reinterpret_cast<T*>(new char[sizeof(T) * n]);
 		for (unsigned int i = 0; i < _size; i++) {
 			newData[i] = _data[i];
+			_data[i].~T();
 		}
 		T* oldData = _data;
 		_data = newData;
