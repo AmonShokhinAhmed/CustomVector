@@ -131,8 +131,10 @@ void Test() {
         for (uint32_t i = 0; i < fooVector.size(); ++i) {
             secondFooVector.push_back(fooVector.at(i));
         }
+#ifdef CUSTOMVECTOR
         fooVector.erase_by_swap(2);
-        // fooVector.erase(fooVector.begin() + 2);
+#endif 
+        fooVector.erase(fooVector.begin() + 2);
         std::cout << std::endl << "for loop" << std::endl << std::endl;
         for (auto f : fooVector) {
             std::cout << f.GetData() << std::endl;
