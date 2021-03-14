@@ -7,9 +7,9 @@ private:
   T *_data;
   // TODO: maybe don't hard code this and instead actually find out the correct
   // value
-  const uint32_t _maxSize;
-  uint32_t _size;
-  uint32_t _capacity;
+  const uint32_t m_maxSize;
+  uint32_t m_size;
+  uint32_t m_capacity;
 
 public:
   struct Iterator {
@@ -48,98 +48,99 @@ public:
   private:
     T *m_ptr;
   };
-  CustomVector() : _data(nullptr), _maxSize(MAXSIZE), _size(0), _capacity(0) {}
+  CustomVector()
+      : _data(nullptr), m_maxSize(MAXSIZE), m_size(0), m_capacity(0) {}
   ~CustomVector() {
-    for (uint32_t i = 0; i < _size; i++) {
+    for (uint32_t i = 0; i < m_size; i++) {
       _data[i].~T();
     }
     delete[] reinterpret_cast<char *>(_data);
   }
 
   T &at(const uint32_t index) {
-    assert(index >= 0 && index < _size);
+    assert(index >= 0 && index < m_size);
     return _data[index];
   }
   T &operator[](const uint32_t index) { return _data[index]; }
 
   void push_back(const T &val) {
-    uint32_t newSize = _size + 1;
-    assert(newSize <= _maxSize);
-    if (newSize > _capacity) {
-      uint32_t newCapacity = _size + (_size / 2);
+    uint32_t newSize = m_size + 1;
+    assert(newSize <= m_maxSize);
+    if (newSize > m_capacity) {
+      uint32_t newCapacity = m_size + (m_size / 2);
       newCapacity = newCapacity >= newSize ? newCapacity : newSize;
       reserve(newCapacity);
     }
-    _data[_size] = T(val);
-    _size = newSize;
+    _data[m_size] = T(val);
+    m_size = newSize;
   }
 
-  uint32_t size(void) { return _size; }
-  uint32_t max_size(void) { return _maxSize; }
-  uint32_t capacity(void) { return _capacity; }
+  uint32_t size(void) { return m_size; }
+  uint32_t max_size(void) { return m_maxSize; }
+  uint32_t capacity(void) { return m_capacity; }
 
   void resize(const uint32_t n) { resize(n, T()); }
   void resize(const uint32_t n, const T &val) {
-    if (n > _maxSize) {
+    if (n > m_maxSize) {
       // TODO: throw error maybe
       return;
     }
 
-    uint32_t newCapacity = _capacity;
+    uint32_t newCapacity = m_capacity;
     while (newCapacity < n) {
       newCapacity += (newCapacity / 2);
     }
     T *newData = reinterpret_cast<T *>(new char[sizeof(T) * newCapacity]);
-    if (n <= _size) {
+    if (n <= m_size) {
       for (uint32_t i = 0; i < n; i++) {
         newData[i] = _data[i];
         _data[i].~T();
       }
     } else {
-      for (uint32_t i = 0; i < _size; i++) {
+      for (uint32_t i = 0; i < m_size; i++) {
         newData[i] = _data[i];
         _data[i].~T();
       }
-      for (uint32_t i = _size; i < n; i++) {
+      for (uint32_t i = m_size; i < n; i++) {
         // This will throw an error if no default constructor is provided, but
         // std::vector does as well
         newData[i] = T(val);
       }
     }
-    _capacity = newCapacity;
-    _size = n;
+    m_capacity = newCapacity;
+    m_size = n;
     T *oldData = _data;
     _data = newData;
     delete[] reinterpret_cast<char *>(oldData);
   }
   void reserve(const uint32_t n) {
-    if (n <= _capacity) {
+    if (n <= m_capacity) {
       return;
     }
     T *newData = reinterpret_cast<T *>(new char[sizeof(T) * n]);
-    for (uint32_t i = 0; i < _size; i++) {
+    for (uint32_t i = 0; i < m_size; i++) {
       newData[i] = _data[i];
       _data[i].~T();
     }
     T *oldData = _data;
     _data = newData;
     delete[] reinterpret_cast<char *>(oldData);
-    _capacity = n;
+    m_capacity = n;
   }
 
   const T *as_array(void) { return _data; }
   void erase_by_swap(const uint32_t n) {
-    assert(n < _size);
-    _size--;
-    if (n != _size) {
+    assert(n < m_size);
+    m_size--;
+    if (n != m_size) {
       _data[n].~T();
-      _data[n] = _data[_size];
+      _data[n] = _data[m_size];
     }
-    _data[_size].~T();
+    _data[m_size].~T();
   }
 
   Iterator begin() { return Iterator(&_data[0]); }
-  Iterator end() { return Iterator(&_data[_size]); }
+  Iterator end() { return Iterator(&_data[m_size]); }
   Iterator erase(Iterator position) { return erase(position, position); }
   Iterator erase(Iterator first, Iterator last) {
     if (first == end()) {
@@ -159,7 +160,7 @@ public:
       ++curPosition;
       delAmount++;
     }
-    _size -= delAmount;
+    m_size -= delAmount;
     return first;
   }
 };
