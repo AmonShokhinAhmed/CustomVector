@@ -16,6 +16,7 @@ private:
 public:
   static int fooCount;
 
+  int GetData() const { return m_data; }
   Foo(int data) : m_data(data) {
     std::cout << "Constructor" << std::endl;
     fooCount++;
@@ -76,21 +77,23 @@ int main() {
       fooVector.push_back(foo);
     }
     for (auto i = fooVector.begin(); i != fooVector.end(); i++) {
-      std::cout << "iterator loop at: " << (*i).data << std::endl;
+      std::cout << "iterator loop at: " << (*i).GetData() << std::endl;
     }
     std::cout << "size before erase at: " << fooVector.size() << std::endl
               << std::endl;
 
     fooVector.erase(fooVector.begin() + 2, fooVector.begin() + 5);
     for (auto i = fooVector.begin(); i != fooVector.end(); i++) {
-      std::cout << "iterator loop after erase at: " << (*i).data << std::endl;
+      std::cout << "iterator loop after erase at: " << (*i).GetData()
+                << std::endl;
     }
     std::cout << "size after erase at: " << fooVector.size() << std::endl
               << std::endl;
 
     fooVector.erase(fooVector.begin() + 2);
     for (auto i = fooVector.begin(); i != fooVector.end(); i++) {
-      std::cout << "iterator loop after erase at: " << (*i).data << std::endl;
+      std::cout << "iterator loop after erase at: " << (*i).GetData()
+                << std::endl;
     }
     std::cout << "size after erase at: " << fooVector.size() << std::endl
               << std::endl;
@@ -117,7 +120,7 @@ int main() {
     // fooVector.erase(fooVector.begin() + 2);
     std::cout << std::endl << "for loop" << std::endl << std::endl;
     for (auto f : fooVector) {
-      std::cout << f.data << std::endl;
+      std::cout << f.GetData() << std::endl;
     }
   }
   std::cout << "Foocount: " << Foo::fooCount << std::endl;
