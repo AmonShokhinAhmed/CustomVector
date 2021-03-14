@@ -1,12 +1,13 @@
 #include <cassert>
+#include <new>
 
 #define MAXSIZE 10e8
-
 
 template <typename T> class CustomVector {
 private:
   T *m_data;
-  // TODO: maybe don't hard code this and instead actually find out the correct value
+  // TODO: maybe don't hard code this and instead actually find out the correct
+  // value
   const uint32_t m_maxSize;
   uint32_t m_size;
   uint32_t m_capacity;
@@ -14,7 +15,7 @@ private:
 public:
   struct Iterator {
 
-    //necessary to work with standard semantic e.g. range based loop
+    // necessary to work with standard semantic e.g. range based loop
     using iterator_category = std::forward_iterator_tag;
     using difference_type = std::ptrdiff_t;
     using value_type = T;
@@ -51,17 +52,18 @@ public:
     T *m_ptr;
   };
 
-  //initializing empty, maybe we should initialize with default capacity, but capacity size depends on application so leaving it empty for now
+  // initializing empty, maybe we should initialize with default capacity, but
+  // capacity size depends on application so leaving it empty for now
   CustomVector()
       : m_data(nullptr), m_maxSize((int)MAXSIZE), m_size(0), m_capacity(0) {}
 
-
   ~CustomVector() {
-      //manually calling destructors because we later delete without calling the destructors
+    // manually calling destructors because we later delete without calling the
+    // destructors
     for (uint32_t i = 0; i < m_size; i++) {
       m_data[i].~T();
     }
-    ::operator delete(m_data, m_capacity*sizeof(T));
+    ::operator delete(m_data, m_capacity * sizeof(T));
   }
 
   T &at(const uint32_t index) {
@@ -70,8 +72,7 @@ public:
   }
   T &operator[](const uint32_t index) { return m_data[index]; }
 
-
-  //push back by reference uses copy constructor
+  // push back by reference uses copy constructor
   void push_back(const T &val) {
     uint32_t newSize = m_size + 1;
     reserveForPush(newSize);
@@ -79,18 +80,18 @@ public:
     m_size = newSize;
   }
 
-  //push back by rvalue uses move assignment
+  // push back by rvalue uses move assignment
   void push_back(T &&val) {
-     uint32_t newSize = m_size + 1;
-     reserveForPush(newSize);
-     m_data[m_size] = std::move(val);
-     m_size = newSize;
-   }
+    uint32_t newSize = m_size + 1;
+    reserveForPush(newSize);
+    m_data[m_size] = std::move(val);
+    m_size = newSize;
+  }
 
   uint32_t size(void) const { return m_size; }
   uint32_t max_size(void) const { return m_maxSize; }
   uint32_t capacity(void) const { return m_capacity; }
-  T* as_array(void) const { return m_data; }
+  T *as_array(void) const { return m_data; }
 
   // This will throw an error if no default constructor is provided, but
   // std::vector does as well
@@ -100,47 +101,50 @@ public:
     assert(n <= MAXSIZE);
 
     uint32_t newCapacity = m_capacity;
-    
-    //growing capacity geometrically so we don't alway have to reallocate memory 
-    //but growth is also not as wastefull as simply duplicating
+
+    // growing capacity geometrically so we don't alway have to reallocate
+    // memory but growth is also not as wastefull as simply duplicating
     while (newCapacity < n) {
       newCapacity += (newCapacity / 2);
     }
 
-    //allocating memory without calling constructors
-    T* newData = (T*)::operator new(newCapacity * sizeof(T));
-    
-    //shrinking the vector
+    // allocating memory without calling constructors
+    T *newData = (T *)::operator new(newCapacity * sizeof(T));
+
+    // shrinking the vector
     if (n <= m_size) {
-      //move data to new location
+      // move data to new location
       for (uint32_t i = 0; i < n; i++) {
-        new(newData + i) T(std::move(m_data[i]));
+        new (newData + i) T(std::move(m_data[i]));
         m_data[i].~T();
       }
-      //delete leftover data
+      // delete leftover data
       for (uint32_t i = n; i < m_size; i++) {
-         m_data[i].~T();
+        m_data[i].~T();
       }
-    } 
-    //growing the vector
+    }
+    // growing the vector
     else {
       for (uint32_t i = 0; i < m_size; i++) {
-          //using this syntax so we don't actually read from un initialized location, because this generates a warning
-          //using move here because we just take the data from the old array
-         new(newData + i) T(std::move(m_data[i]));
+        // using this syntax so we don't actually read from un initialized
+        // location, because this generates a warning using move here because we
+        // just take the data from the old array
+        new (newData + i) T(std::move(m_data[i]));
         m_data[i].~T();
       }
       for (uint32_t i = m_size; i < n; i++) {
-        //using this syntax so we don't actually read from un initialized location, because this generates a warning
-        //copying here because we duplicate the given value to all positions
-        new(newData + i ) T(val);
+        // using this syntax so we don't actually read from un initialized
+        // location, because this generates a warning copying here because we
+        // duplicate the given value to all positions
+        new (newData + i) T(val);
       }
     }
-    
+
     T *oldData = m_data;
     m_data = newData;
-    //deleting without calling destructors, because we called them manually in the loops before
-    ::operator delete(oldData, m_capacity*sizeof(T));
+    // deleting without calling destructors, because we called them manually in
+    // the loops before
+    ::operator delete(oldData, m_capacity * sizeof(T));
     m_size = n;
     m_capacity = newCapacity;
   }
@@ -150,17 +154,18 @@ public:
       return;
     }
 
-    //allocating without calling constructors
-    T* newData = (T*)::operator new(n * sizeof(T));
+    // allocating without calling constructors
+    T *newData = (T *)::operator new(n * sizeof(T));
 
-    //moving old data over to new location
+    // moving old data over to new location
     for (uint32_t i = 0; i < m_size; i++) {
-      new(newData + i) T(std::move(m_data[i]));
+      new (newData + i) T(std::move(m_data[i]));
       m_data[i].~T();
     }
     T *oldData = m_data;
     m_data = newData;
-    //delete without calling destructors, because we called them manually in the moving loop
+    // delete without calling destructors, because we called them manually in
+    // the moving loop
     ::operator delete(oldData, m_capacity * sizeof(T));
     m_capacity = n;
   }
@@ -185,17 +190,17 @@ public:
     Iterator curPosition = first;
     Iterator nextPosition = last + 1;
 
-    //repeat for every element in the section between first and last
+    // repeat for every element in the section between first and last
     while (nextPosition != end()) {
-      //deleting the data
+      // deleting the data
       (*curPosition).~T();
-      //moving over the data into the gap that the delete creates
+      // moving over the data into the gap that the delete creates
       (*curPosition) = std::move(*(nextPosition));
       ++curPosition;
       ++nextPosition;
     }
     uint32_t delAmount = 0;
-    //delete leftover empty positions
+    // delete leftover empty positions
     while (curPosition != end()) {
       (*curPosition).~T();
       ++curPosition;
