@@ -4,7 +4,7 @@
 
 template <typename T> class CustomVector {
 private:
-  T *_data;
+  T *m_data;
   // TODO: maybe don't hard code this and instead actually find out the correct
   // value
   const uint32_t m_maxSize;
@@ -49,40 +49,40 @@ public:
     T *m_ptr;
   };
   CustomVector()
-      : _data(nullptr), m_maxSize((int)MAXSIZE), m_size(0), m_capacity(0) {}
+      : m_data(nullptr), m_maxSize((int)MAXSIZE), m_size(0), m_capacity(0) {}
 
   ~CustomVector() {
     for (uint32_t i = 0; i < m_size; i++) {
-      _data[i].~T();
+      m_data[i].~T();
     }
-    ::operator delete(_data, m_capacity*sizeof(T));
+    ::operator delete(m_data, m_capacity*sizeof(T));
   }
 
   T &at(const uint32_t index) {
     assert(index >= 0 && index < m_size);
-    return _data[index];
+    return m_data[index];
   }
-  T &operator[](const uint32_t index) { return _data[index]; }
+  T &operator[](const uint32_t index) { return m_data[index]; }
 
   // another push_back for rvalues using move semantics might be necessary
   void push_back(const T &val) {
     uint32_t newSize = m_size + 1;
     reserveForPush(newSize);
-    _data[m_size] = T(val);
+    m_data[m_size] = T(val);
     m_size = newSize;
   }
 
   void push_back(T &&val) {
      uint32_t newSize = m_size + 1;
      reserveForPush(newSize);
-     _data[m_size] = std::move(val);
+     m_data[m_size] = std::move(val);
      m_size = newSize;
    }
 
   uint32_t size(void) const { return m_size; }
   uint32_t max_size(void) const { return m_maxSize; }
   uint32_t capacity(void) const { return m_capacity; }
-  T* as_array(void) const { return _data; }
+  T* as_array(void) const { return m_data; }
 
   // This will throw an error if no default constructor is provided, but
   // std::vector does as well
@@ -100,19 +100,19 @@ public:
     if (n <= m_size) {
       //move data to new location
       for (uint32_t i = 0; i < n; i++) {
-        newData[i] = std::move(_data[i]);
-        _data[i].~T();
+        newData[i] = std::move(m_data[i]);
+        m_data[i].~T();
       }
       //delete leftover data
       for (uint32_t i = n; i < m_size; i++) {
-         _data[i].~T();
+         m_data[i].~T();
       }
     } else {
       for (uint32_t i = 0; i < m_size; i++) {
           //using this syntax so we don't actually read from un initialized location
           //using move here because we just take the data from the old array
-         new(newData + i) T(std::move(_data[i]));
-        _data[i].~T();
+         new(newData + i) T(std::move(m_data[i]));
+        m_data[i].~T();
       }
       for (uint32_t i = m_size; i < n; i++) {
          //copying here because we duplicate the given value to all positions
@@ -121,8 +121,8 @@ public:
       }
     }
     
-    T *oldData = _data;
-    _data = newData;
+    T *oldData = m_data;
+    m_data = newData;
     ::operator delete(oldData, m_capacity*sizeof(T));
     m_size = n;
     m_capacity = newCapacity;
@@ -134,11 +134,11 @@ public:
     }
     T* newData = (T*)::operator new(n * sizeof(T));
     for (uint32_t i = 0; i < m_size; i++) {
-      newData[i] = std::move(_data[i]);
-      _data[i].~T();
+      newData[i] = std::move(m_data[i]);
+      m_data[i].~T();
     }
-    T *oldData = _data;
-    _data = newData;
+    T *oldData = m_data;
+    m_data = newData;
     ::operator delete(oldData, m_capacity * sizeof(T));
     m_capacity = n;
   }
@@ -147,14 +147,14 @@ public:
     assert(n < m_size);
     m_size--;
     if (n != m_size) {
-      _data[n].~T();
-      _data[n] = std::move(_data[m_size]);
+      m_data[n].~T();
+      m_data[n] = std::move(m_data[m_size]);
     }
-    _data[m_size].~T();
+    m_data[m_size].~T();
   }
 
-  Iterator begin() { return Iterator(&_data[0]); }
-  Iterator end() { return Iterator(&_data[m_size]); }
+  Iterator begin() { return Iterator(&m_data[0]); }
+  Iterator end() { return Iterator(&m_data[m_size]); }
   Iterator erase(Iterator position) { return erase(position, position); }
   Iterator erase(Iterator first, Iterator last) {
     if (first == end()) {
