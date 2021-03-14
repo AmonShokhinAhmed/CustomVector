@@ -10,25 +10,35 @@ template <typename T> using vector = std::vector<T>;
 #endif
 
 class Foo {
+private:
+  int m_data;
+
 public:
   static int fooCount;
-  int data;
-  Foo(int data) : data(data) {
-    // std::cout << "Constructor" << std::endl;
+
+  Foo(int data) : m_data(data) {
+    std::cout << "Constructor" << std::endl;
     fooCount++;
   }
+
   Foo &operator=(const Foo &foo) {
-    // std::cout << "Copy Assignment" << std::endl;
-    data = foo.data;
+    std::cout << "Copy Assignment" << std::endl;
+    m_data = foo.m_data;
     fooCount++;
     return *this;
   }
-  Foo(const Foo &foo) : data(foo.data) {
-    // std::cout << "Copy" << std::endl;
+
+  Foo(const Foo &foo) : m_data(foo.m_data) {
+    std::cout << "Copy Constructor" << std::endl;
     fooCount++;
   }
+
+  Foo(Foo &&foo) : m_data(std::move(foo.m_data)) {
+    std::cout << "Move Constructor" << std::endl;
+  }
+
   ~Foo() {
-    // std::cout << "Destructor" << std::endl;
+    std::cout << "Destructor" << std::endl;
     fooCount--;
   }
 };
