@@ -49,12 +49,13 @@ public:
     T *m_ptr;
   };
   CustomVector()
-      : _data(nullptr), m_maxSize(MAXSIZE), m_size(0), m_capacity(0) {}
+      : _data(nullptr), m_maxSize((int)MAXSIZE), m_size(0), m_capacity(0) {}
+
   ~CustomVector() {
     for (uint32_t i = 0; i < m_size; i++) {
       _data[i].~T();
     }
-    delete[] reinterpret_cast<char *>(_data);
+    ::operator delete(_data, m_capacity*sizeof(T));
   }
 
   T &at(const uint32_t index) {
@@ -63,78 +64,91 @@ public:
   }
   T &operator[](const uint32_t index) { return _data[index]; }
 
+  // another push_back for rvalues using move semantics might be necessary
   void push_back(const T &val) {
     uint32_t newSize = m_size + 1;
-    assert(newSize <= m_maxSize);
-    if (newSize > m_capacity) {
-      uint32_t newCapacity = m_size + (m_size / 2);
-      newCapacity = newCapacity >= newSize ? newCapacity : newSize;
-      reserve(newCapacity);
-    }
+    reserveForPush(newSize);
     _data[m_size] = T(val);
     m_size = newSize;
   }
 
-  uint32_t size(void) { return m_size; }
-  uint32_t max_size(void) { return m_maxSize; }
-  uint32_t capacity(void) { return m_capacity; }
+  void push_back(T &&val) {
+     uint32_t newSize = m_size + 1;
+     reserveForPush(newSize);
+     _data[m_size] = std::move(val);
+     m_size = newSize;
+   }
 
+  uint32_t size(void) const { return m_size; }
+  uint32_t max_size(void) const { return m_maxSize; }
+  uint32_t capacity(void) const { return m_capacity; }
+  T* as_array(void) const { return _data; }
+
+  // This will throw an error if no default constructor is provided, but
+  // std::vector does as well
   void resize(const uint32_t n) { resize(n, T()); }
   void resize(const uint32_t n, const T &val) {
-    if (n > m_maxSize) {
-      // TODO: throw error maybe
-      return;
-    }
+      assert(n <= MAXSIZE);
 
     uint32_t newCapacity = m_capacity;
+    
     while (newCapacity < n) {
       newCapacity += (newCapacity / 2);
     }
-    T *newData = reinterpret_cast<T *>(new char[sizeof(T) * newCapacity]);
+
+    T* newData = (T*)::operator new(newCapacity * sizeof(T));
     if (n <= m_size) {
+      //move data to new location
       for (uint32_t i = 0; i < n; i++) {
-        newData[i] = _data[i];
+        newData[i] = std::move(_data[i]);
         _data[i].~T();
+      }
+      //delete leftover data
+      for (uint32_t i = n; i < m_size; i++) {
+         _data[i].~T();
       }
     } else {
       for (uint32_t i = 0; i < m_size; i++) {
-        newData[i] = _data[i];
+          //using this syntax so we don't actually read from un initialized location
+          //using move here because we just take the data from the old array
+         new(newData + i) T(std::move(_data[i]));
         _data[i].~T();
       }
       for (uint32_t i = m_size; i < n; i++) {
-        // This will throw an error if no default constructor is provided, but
-        // std::vector does as well
-        newData[i] = T(val);
+         //copying here because we duplicate the given value to all positions
+        //using this syntax so we don't actually read from un initialized location
+        new(newData + i ) T(val);
       }
     }
-    m_capacity = newCapacity;
-    m_size = n;
+    
     T *oldData = _data;
     _data = newData;
-    delete[] reinterpret_cast<char *>(oldData);
+    ::operator delete(oldData, m_capacity*sizeof(T));
+    m_size = n;
+    m_capacity = newCapacity;
   }
+
   void reserve(const uint32_t n) {
     if (n <= m_capacity) {
       return;
     }
-    T *newData = reinterpret_cast<T *>(new char[sizeof(T) * n]);
+    T* newData = (T*)::operator new(n * sizeof(T));
     for (uint32_t i = 0; i < m_size; i++) {
-      newData[i] = _data[i];
+      newData[i] = std::move(_data[i]);
       _data[i].~T();
     }
     T *oldData = _data;
     _data = newData;
-    delete[] reinterpret_cast<char *>(oldData);
+    ::operator delete(oldData, m_capacity * sizeof(T));
     m_capacity = n;
   }
 
-  const T *as_array(void) { return _data; }
   void erase_by_swap(const uint32_t n) {
     assert(n < m_size);
     m_size--;
     if (n != m_size) {
       _data[n].~T();
-      _data[n] = _data[m_size];
+      _data[n] = std::move(_data[m_size]);
     }
     _data[m_size].~T();
   }
@@ -150,7 +164,7 @@ public:
     Iterator nextPosition = last + 1;
     while (nextPosition != end()) {
       (*curPosition).~T();
-      (*curPosition) = (*(nextPosition));
+      (*curPosition) = std::move(*(nextPosition));
       ++curPosition;
       ++nextPosition;
     }
@@ -158,9 +172,20 @@ public:
     while (curPosition != end()) {
       (*curPosition).~T();
       ++curPosition;
-      delAmount++;
+      ++delAmount;
     }
     m_size -= delAmount;
     return first;
+  }
+
+private:
+  void reserveForPush(uint32_t newSize) {
+    assert(newSize <= m_maxSize);
+    if (newSize > m_capacity) {
+      // using geometric growth
+      uint32_t newCapacity = m_size + (m_size / 2);
+      newCapacity = newCapacity >= newSize ? newCapacity : newSize;
+      reserve(newCapacity);
+    }
   }
 };
