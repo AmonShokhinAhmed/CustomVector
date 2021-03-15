@@ -76,7 +76,7 @@ public:
   void push_back(const T &val) {
     uint32_t newSize = m_size + 1;
     reserveForPush(newSize);
-    m_data[m_size] = T(val);
+    new (m_data + m_size) T(val);
     m_size = newSize;
   }
 
@@ -84,7 +84,7 @@ public:
   void push_back(T &&val) {
     uint32_t newSize = m_size + 1;
     reserveForPush(newSize);
-    m_data[m_size] = std::move(val);
+    new (m_data + m_size)T(std::move(val));
     m_size = newSize;
   }
 
