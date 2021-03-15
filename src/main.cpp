@@ -2,7 +2,6 @@
 //#define PRINT_CONSTRUCTION_AND_DESTRUCTION
 
 #include <iostream>
-#include <string> 
 
 #ifdef CUSTOMVECTOR
 #include "CustomVector.h"
@@ -76,7 +75,7 @@ int Foo::fooCount = 0;
 
 void Test() {
   std::cout << "Creating vector: " << std::endl;
-  vector<std::string> fooVector = vector<std::string>();
+  vector<Foo> fooVector = vector<Foo>();
 
   std::cout << std::endl
             << "---------------------------------------------------------------"
@@ -86,7 +85,7 @@ void Test() {
 
   std::cout << "Pushing back with reference: " << std::endl;
   for (int i = 0; i < 5; ++i) {
-    std::string foo = std::to_string(i);
+    Foo foo = Foo(i);
     fooVector.push_back(foo);
   }
 
@@ -98,7 +97,7 @@ void Test() {
 
   std::cout << "Pushing back with rvalue: " << std::endl;
   for (int i = 5; i < 10; ++i) {
-    fooVector.push_back(std::to_string(i));
+    fooVector.push_back(Foo(i));
   }
   std::cout << std::endl
             << "---------------------------------------------------------------"
@@ -108,7 +107,7 @@ void Test() {
 
   std::cout << "Range based for loop: " << std::endl;
   for (auto f : fooVector) {
-    std::cout << f << ", ";
+    std::cout << f.GetData() << ", ";
   }
   std::cout << std::endl;
 
@@ -140,7 +139,7 @@ void Test() {
   std::cout << "Capacity before erasing: " << fooVector.capacity() << std::endl;
   std::cout << "Elements before erasing: " << std::endl;
   for (auto f : fooVector) {
-    std::cout << f << ", ";
+    std::cout << f.GetData() << ", ";
   }
   std::cout << std::endl;
 
@@ -150,7 +149,7 @@ void Test() {
   std::cout << "Capacity after erasing: " << fooVector.capacity() << std::endl;
   std::cout << "Elements after erasing: " << std::endl;
   for (auto f : fooVector) {
-    std::cout << f << ", ";
+    std::cout << f.GetData() << ", ";
   }
   std::cout << std::endl;
 
@@ -166,7 +165,7 @@ void Test() {
   std::cout << "Capacity before erasing: " << fooVector.capacity() << std::endl;
   std::cout << "Elements before erasing: " << std::endl;
   for (auto f : fooVector) {
-    std::cout << f << ", ";
+    std::cout << f.GetData() << ", ";
   }
   std::cout << std::endl;
 
@@ -175,8 +174,8 @@ void Test() {
   std::cout << "Size after erasing: " << fooVector.size() << std::endl;
   std::cout << "Capacity after erasing: " << fooVector.capacity() << std::endl;
   std::cout << "Elements after erasing: " << std::endl;
-  for (auto i = fooVector.begin(); i != fooVector.end(); i++) {
-    std::cout << (*i) << ", ";
+   for (auto f : fooVector) {
+    std::cout << f.GetData() << ", ";
   }
   std::cout << std::endl;
 
@@ -188,7 +187,7 @@ void Test() {
 
   std::cout << "Loop using at()" << std::endl;
   for (uint32_t i = 0; i < fooVector.size(); ++i) {
-    std::cout << fooVector.at(i) << ", ";
+    std::cout << fooVector.at(i).GetData() << ", ";
   }
 
   std::cout << std::endl
@@ -199,7 +198,7 @@ void Test() {
 
   std::cout << "Loop using []" << std::endl;
   for (uint32_t i = 0; i < fooVector.size(); ++i) {
-    std::cout << fooVector[i] << ", ";
+    std::cout << fooVector[i].GetData() << ", ";
   }
 
   std::cout << std::endl
@@ -221,7 +220,7 @@ void Test() {
 
   std::cout << "Resizing to size 20: " << std::endl;
   std::cout << "Size before resize: " << fooVector.size() << std::endl;
-  fooVector.resize(20, std::to_string(20));
+  fooVector.resize(20, Foo(20));
   std::cout << "Size after resize: " << fooVector.size() << std::endl;
 
   std::cout << std::endl
@@ -232,7 +231,7 @@ void Test() {
 
   std::cout << "Loop using raw pointer: " << std::endl;
   for (uint32_t i = 0; i < fooVector.size(); ++i) {
-    std::cout << *(fooVector.as_array() + i) << std::endl;
+    std::cout << (fooVector.as_array() + i)->GetData() << std::endl;
   }
 
   std::cout << std::endl
@@ -245,7 +244,7 @@ void Test() {
   std::cout << "Changing vector elments to new values: " << std::endl;
   std::cout << "Elements before change: " << std::endl;
   for (auto f : fooVector) {
-    std::cout << f << ", ";
+    std::cout << f.GetData() << ", ";
   }
   std::cout << std::endl;
 
@@ -253,11 +252,11 @@ void Test() {
     // decrementing here because we have to falsely count up in foo because of
     // allocating of memory without calling the constructor of Foo in vector
     Foo::fooCount--;
-    fooVector[i] = std::to_string(i);
+    fooVector[i] = Foo(i);
   }
   std::cout << "Elements after change: " << std::endl;
   for (auto f : fooVector) {
-    std::cout << f << ", ";
+    std::cout << f.GetData() << ", ";
   }
   std::cout << std::endl;
 
@@ -269,16 +268,16 @@ void Test() {
 
   std::cout << "Erasing element at index 2 by swap:" << std::endl;
   std::cout << "Size before erase: " << fooVector.size() << std::endl;
-  std::cout << "Element at index 2 before erase: " << fooVector.at(2)
+  std::cout << "Element at index 2 before erase: " << fooVector.at(2).GetData()
             << std::endl;
   std::cout << "Element at last position before erase: "
-            << fooVector.at(fooVector.size() - 1) << std::endl;
+            << fooVector.at(fooVector.size() - 1).GetData() << std::endl;
   fooVector.erase_by_swap(2);
   std::cout << "Size after erase: " << fooVector.size() << std::endl;
-  std::cout << "Element at index 2 after erase: " << fooVector.at(2)
+  std::cout << "Element at index 2 after erase: " << fooVector.at(2).GetData()
             << std::endl;
   std::cout << "Element at last position before erase: "
-            << fooVector.at(fooVector.size() - 1) << std::endl;
+            << fooVector.at(fooVector.size() - 1).GetData() << std::endl;
 
 #endif // CUSTOMVECTOR
 }
