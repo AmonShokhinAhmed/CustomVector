@@ -19,7 +19,7 @@ public:
   static int fooCount;
 
   int GetData() const { return m_data; }
-  Foo(int data) : m_data(data) {
+  explicit Foo(int data) : m_data(data) {
 #ifdef PRINT_CONSTRUCTION_AND_DESTRUCTION
     std::cout << "Constructor" << std::endl;
 #endif // PRINT_CONSTRUCTION_AND_DESTRUCTION
@@ -106,7 +106,7 @@ void Test() {
             << std::endl;
 
   std::cout << "Range based for loop: " << std::endl;
-  for (auto f : fooVector) {
+  for (const auto& f : fooVector) {
     std::cout << f.GetData() << ", ";
   }
   std::cout << std::endl;
@@ -138,7 +138,7 @@ void Test() {
   std::cout << "Size before erasing: " << fooVector.size() << std::endl;
   std::cout << "Capacity before erasing: " << fooVector.capacity() << std::endl;
   std::cout << "Elements before erasing: " << std::endl;
-  for (auto f : fooVector) {
+  for (const auto& f : fooVector) {
     std::cout << f.GetData() << ", ";
   }
   std::cout << std::endl;
@@ -148,7 +148,7 @@ void Test() {
   std::cout << "Size after erasing: " << fooVector.size() << std::endl;
   std::cout << "Capacity after erasing: " << fooVector.capacity() << std::endl;
   std::cout << "Elements after erasing: " << std::endl;
-  for (auto f : fooVector) {
+  for (const auto& f : fooVector) {
     std::cout << f.GetData() << ", ";
   }
   std::cout << std::endl;
@@ -164,7 +164,7 @@ void Test() {
   std::cout << "Size before erasing: " << fooVector.size() << std::endl;
   std::cout << "Capacity before erasing: " << fooVector.capacity() << std::endl;
   std::cout << "Elements before erasing: " << std::endl;
-  for (auto f : fooVector) {
+  for (const auto& f : fooVector) {
     std::cout << f.GetData() << ", ";
   }
   std::cout << std::endl;
@@ -174,7 +174,7 @@ void Test() {
   std::cout << "Size after erasing: " << fooVector.size() << std::endl;
   std::cout << "Capacity after erasing: " << fooVector.capacity() << std::endl;
   std::cout << "Elements after erasing: " << std::endl;
-   for (auto f : fooVector) {
+   for (const auto& f : fooVector) {
     std::cout << f.GetData() << ", ";
   }
   std::cout << std::endl;
@@ -243,7 +243,7 @@ void Test() {
 #ifdef CUSTOMVECTOR
   std::cout << "Changing vector elments to new values: " << std::endl;
   std::cout << "Elements before change: " << std::endl;
-  for (auto f : fooVector) {
+  for (const auto& f : fooVector) {
     std::cout << f.GetData() << ", ";
   }
   std::cout << std::endl;
@@ -255,7 +255,7 @@ void Test() {
     fooVector[i] = Foo(i);
   }
   std::cout << "Elements after change: " << std::endl;
-  for (auto f : fooVector) {
+  for (const auto& f : fooVector) {
     std::cout << f.GetData() << ", ";
   }
   std::cout << std::endl;

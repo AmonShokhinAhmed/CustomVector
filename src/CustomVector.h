@@ -22,7 +22,7 @@ public:
     using pointer = T *;   // or also value_type*
     using reference = T &; // or also value_type&
 
-    Iterator(pointer ptr) : m_ptr(ptr) {}
+    explicit Iterator(pointer ptr) : m_ptr(ptr) {}
     reference operator*() const { return *m_ptr; }
     pointer operator->() { return m_ptr; }
     Iterator &operator++() {
@@ -43,7 +43,7 @@ public:
     Iterator operator+(const int &i) {
       Iterator iterator(*this);
       for (int j = 0; j < i; j++) {
-        iterator++;
+        ++iterator;
       }
       return iterator;
     }
@@ -63,11 +63,11 @@ public:
     for (uint32_t i = 0; i < m_size; i++) {
       m_data[i].~T();
     }
-    ::operator delete(m_data, m_capacity * sizeof(T));
+    ::operator delete(m_data);
   }
 
   T &at(const uint32_t index) {
-    assert(index >= 0 && index < m_size);
+    assert(index < m_size);
     return m_data[index];
   }
   T &operator[](const uint32_t index) { return m_data[index]; }
@@ -144,7 +144,7 @@ public:
     m_data = newData;
     // deleting without calling destructors, because we called them manually in
     // the loops before
-    ::operator delete(oldData, m_capacity * sizeof(T));
+    ::operator delete(oldData);
     m_size = n;
     m_capacity = newCapacity;
   }
@@ -166,7 +166,7 @@ public:
     m_data = newData;
     // delete without calling destructors, because we called them manually in
     // the moving loop
-    ::operator delete(oldData, m_capacity * sizeof(T));
+    ::operator delete(oldData);
     m_capacity = n;
   }
 
